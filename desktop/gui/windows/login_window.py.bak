@@ -1,0 +1,329 @@
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk, GLib
+import sys
+import os
+import threading
+
+# Add CLI path for importing CLI modules
+cli_path = os.path.join(os.path.dirname(__file__), '..', '..', 'cli')
+if cli_path not in sys.path:
+    sys.path.insert(0, cli_path)
+
+from commands import UPassSession
+from utils import validate_username
+
+
+class LoginWindow(Gtk.Box):
+    """Login/Register widget"""
+    
+    def __init__(self, login_callback, session):
+        super().__init__(orientation=Gtk.Orientation.VERTICAL)
+        self.login_callback = login_callback
+        self.session = session
+        
+        self._setup_ui()
+    
+    def _setup_ui(self):
+        """Setup login UI"""
+        # Center content
+        center_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
+        center_box.set_halign(Gtk.Align.CENTER)
+        center_box.set_valign(Gtk.Align.CENTER)
+        self.pack_start(center_box, True, True, 0)
+        
+        # Logo/Title
+        title_label = Gtk.Label()
+        title_label.set_markup("<span size='xx-large' weight='bold'>UPass</span>")
+        center_box.pack_start(title_label, False, False, 0)
+        
+        subtitle_label = Gtk.Label("Zero-knowledge password manager")
+        subtitle_label.get_style_context().add_class("dim-label")
+        center_box.pack_start(subtitle_label, False, False, 0)
+        
+        # Spacer
+        center_box.pack_start(Gtk.Box(), False, False, 20)
+        
+        # Form container
+        form_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
+        form_box.set_size_request(300, -1)
+        center_box.pack_start(form_box, False, False, 0)
+        
+        # Vault name field
+        vault_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        vault_label = Gtk.Label("Vault Name", xalign=0)
+        vault_box.pack_start(vault_label, False, False, 0)
+        
+        self.vault_entry = Gtk.Entry()
+        self.vault_entry.set_placeholder_text("Enter vault name")
+        self.vault_entry.connect("activate", lambda w: self.password_entry.grab_focus())
+        vault_box.pack_start(self.vault_entry, False, False, 0)
+        
+        form_box.pack_start(vault_box, False, False, 0)
+        
+        # Password field
+        password_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        password_label = Gtk.Label("Master Password", xalign=0)
+        password_box.pack_start(password_label, False, False, 0)
+        
+        self.password_entry = Gtk.Entry()
+        self.password_entry.set_placeholder_text("Enter master password")
+        self.password_entry.set_visibility(False)
+        self.password_entry.set_input_purpose(Gtk.InputPurpose.PASSWORD)
+        self.password_entry.connect("activate", lambda w: self._on_login_clicked())
+        password_box.pack_start(self.password_entry, False, False, 0)
+        
+        form_box.pack_start(password_box, False, False, 0)
+        
+        # Confirm password field (for registration) - initially hidden
+        self.confirm_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        confirm_label = Gtk.Label("Confirm Password", xalign=0)
+        self.confirm_box.pack_start(confirm_label, False, False, 0)
+        
+        self.confirm_entry = Gtk.Entry()
+        self.confirm_entry.set_placeholder_text("Confirm master password")
+        self.confirm_entry.set_visibility(False)
+        self.confirm_entry.set_input_purpose(Gtk.InputPurpose.PASSWORD)
+        self.confirm_entry.connect("activate", lambda w: self._on_register_clicked())
+        self.confirm_box.pack_start(self.confirm_entry, False, False, 0)
+        
+        form_box.pack_start(self.confirm_box, False, False, 0)
+        # Important: Hide confirm box by default
+        self.confirm_box.set_visible(False)
+        self.confirm_box.set_no_show_all(True)  # Don't show when show_all() is called
+        
+        # Main action button
+        self.main_button = Gtk.Button("Open Vault")
+        self.main_button.get_style_context().add_class("suggested-action")
+        self.main_button.connect("clicked", self._on_main_button_clicked)
+        form_box.pack_start(self.main_button, False, False, 12)
+        
+        # Mode toggle
+        self.mode_button = Gtk.Button()
+        self.mode_button.set_relief(Gtk.ReliefStyle.NONE)
+        self.mode_button.connect("clicked", self._toggle_mode)
+        form_box.pack_start(self.mode_button, False, False, 0)
+        
+        # Error label
+        self.error_label = Gtk.Label()
+        self.error_label.get_style_context().add_class("error")
+        self.error_label.set_line_wrap(True)
+        self.error_label.set_max_width_chars(40)
+        form_box.pack_start(self.error_label, False, False, 0)
+        
+        # Progress spinner
+        self.spinner = Gtk.Spinner()
+        form_box.pack_start(self.spinner, False, False, 0)
+        
+        # Set initial mode
+        self._set_login_mode()
+        
+        # Show all widgets
+        self.show_all()
+        
+        # Focus vault entry
+        self.vault_entry.grab_focus()
+        
+        # Load last vault name if available
+        last_vault = self.session.config.get_last_username()  # CLI still uses username internally
+        if last_vault:
+            self.vault_entry.set_text(last_vault)
+            self.password_entry.grab_focus()
+    
+    def _set_login_mode(self):
+        """Set UI to login mode"""
+        self.mode = "login"
+        self.confirm_box.set_visible(False)
+        self.confirm_box.set_no_show_all(True)
+        self.main_button.set_label("Login")
+        self.mode_button.set_label("Create New Vault")
+        self.error_label.set_text("")
+    
+    def _set_register_mode(self):
+        """Set UI to register mode"""
+        self.mode = "register"
+        self.confirm_box.set_no_show_all(False)
+        self.confirm_box.set_visible(True)
+        self.confirm_box.show_all()
+        self.main_button.set_label("Create Vault")
+        self.mode_button.set_label("Already have a vault? Login")
+        self.error_label.set_text("")
+    
+    def _toggle_mode(self, button):
+        """Toggle between login and register mode"""
+        if self.mode == "login":
+            self._set_register_mode()
+        else:
+            self._set_login_mode()
+    
+    def _show_error(self, message):
+        """Show error message"""
+        self.error_label.set_text(message)
+        self.spinner.stop()
+        self._set_sensitive(True)
+    
+    def _set_sensitive(self, sensitive):
+        """Enable/disable form inputs"""
+        self.vault_entry.set_sensitive(sensitive)
+        self.password_entry.set_sensitive(sensitive)
+        self.confirm_entry.set_sensitive(sensitive)
+        self.main_button.set_sensitive(sensitive)
+        self.mode_button.set_sensitive(sensitive)
+    
+    def _validate_inputs(self):
+        """Validate form inputs"""
+        vault_name = self.vault_entry.get_text().strip()
+        password = self.password_entry.get_text()
+        
+        if not vault_name:
+            self._show_error("Vault name is required")
+            return False
+        
+        if not validate_username(vault_name):  # CLI still uses username validation internally
+            self._show_error("Invalid vault name (alphanumeric only, max 32 chars)")
+            return False
+        
+        if not password:
+            self._show_error("Password is required")
+            return False
+        
+        if self.mode == "register":
+            confirm = self.confirm_entry.get_text()
+            if password != confirm:
+                self._show_error("Passwords do not match")
+                return False
+        
+        return True
+    
+    def _on_main_button_clicked(self, button):
+        """Handle main button click (login or register)"""
+        if self.mode == "login":
+            self._on_login_clicked()
+        else:
+            self._on_register_clicked()
+    
+    def _on_login_clicked(self):
+        """Handle login action"""
+        if not self._validate_inputs():
+            return
+        
+        self.error_label.set_text("")
+        self.spinner.start()
+        self._set_sensitive(False)
+        
+        # Run login in background thread to keep UI responsive
+        thread = threading.Thread(target=self._do_login_thread)
+        thread.daemon = True
+        thread.start()
+    
+    def _do_login_thread(self):
+        """Perform login in background thread"""
+        vault_name = self.vault_entry.get_text().strip()
+        password = self.password_entry.get_text()
+        
+        # Use the session passed from main window (which has correct server URL)
+        session = self.session
+        
+        # Mock the password input for the session
+        import io
+        import sys
+        old_stdin = sys.stdin
+        sys.stdin = io.StringIO(password + '\n')
+        
+        try:
+            # Temporarily override getpass
+            import getpass
+            old_getpass = getpass.getpass
+            getpass.getpass = lambda prompt: password
+            
+            success = session.login(vault_name)  # CLI internally treats this as username
+            
+            # Update UI in main thread
+            if success:
+                GLib.idle_add(self._on_login_success, session)
+            else:
+                GLib.idle_add(self._on_login_error, "Invalid vault name or password")
+                
+        except Exception as e:
+            GLib.idle_add(self._on_login_error, str(e))
+        finally:
+            # Restore
+            sys.stdin = old_stdin
+            getpass.getpass = old_getpass
+    
+    def _on_login_success(self, session):
+        """Handle successful login in main thread"""
+        self.session = session
+        self.spinner.stop()
+        self.login_callback()
+        return False
+    
+    def _on_login_error(self, error_msg):
+        """Handle login error in main thread"""
+        self._show_error(error_msg)
+        return False
+    
+    def _on_register_clicked(self):
+        """Handle register action"""
+        if not self._validate_inputs():
+            return
+        
+        self.error_label.set_text("")
+        self.spinner.start()
+        self._set_sensitive(False)
+        
+        # Run register in background thread to keep UI responsive
+        thread = threading.Thread(target=self._do_register_thread)
+        thread.daemon = True
+        thread.start()
+    
+    def _do_register_thread(self):
+        """Perform registration in background thread"""
+        vault_name = self.vault_entry.get_text().strip()
+        password = self.password_entry.get_text()
+        
+        # Use the session passed from main window (which has correct server URL)
+        session = self.session
+        
+        # Mock the password input for the session
+        import io
+        import sys
+        old_stdin = sys.stdin
+        sys.stdin = io.StringIO(password + '\n' + password + '\n')
+        
+        try:
+            # Temporarily override getpass
+            import getpass
+            old_getpass = getpass.getpass
+            def mock_getpass(prompt):
+                if "Confirm" in prompt:
+                    return password
+                return password
+            getpass.getpass = mock_getpass
+            
+            success = session.register(vault_name)  # CLI internally treats this as username
+            
+            # Update UI in main thread
+            if success:
+                GLib.idle_add(self._on_register_success, session)
+            else:
+                GLib.idle_add(self._on_register_error, "Vault creation failed. Vault name may already exist.")
+                
+        except Exception as e:
+            GLib.idle_add(self._on_register_error, str(e))
+        finally:
+            # Restore
+            sys.stdin = old_stdin
+            getpass.getpass = old_getpass
+    
+    def _on_register_success(self, session):
+        """Handle successful registration in main thread"""
+        self.session = session
+        self.spinner.stop()
+        self.login_callback()
+        return False
+    
+    def _on_register_error(self, error_msg):
+        """Handle registration error in main thread"""
+        self._show_error(error_msg)
+        return False

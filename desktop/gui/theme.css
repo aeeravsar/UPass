@@ -1,0 +1,582 @@
+/* UPass Dark Theme - Swiss Red */
+
+/* Force dark theme - this ensures Windows uses dark variants */
+@define-color theme_base_color #2d2d2d;
+@define-color theme_bg_color #1e1e1e;
+@define-color theme_fg_color #ffffff;
+@define-color theme_selected_bg_color #FF0000;
+@define-color theme_selected_fg_color #ffffff;
+@define-color insensitive_bg_color #383838;
+@define-color insensitive_fg_color #888888;
+@define-color borders #444444;
+@define-color warning_color #FF5252;
+
+/* Remove deprecated properties - they cause parsing errors */
+
+/* Window background */
+window {
+    background-color: #1e1e1e;
+    color: #ffffff;
+}
+
+/* Header bar */
+headerbar {
+    background: #FF0000;
+    color: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+/* Header bar title and subtitle - make them pure white for better contrast */
+headerbar .title {
+    color: white;
+    font-weight: bold;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+    letter-spacing: 0.5px;
+}
+
+headerbar .subtitle {
+    color: white;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
+    opacity: 0.95;
+}
+
+headerbar button {
+    color: white;
+    background: transparent;
+    border: none;
+    padding: 5px;
+    margin: 2px;
+    box-shadow: none;
+    outline: none;
+    text-shadow: none;
+}
+
+headerbar button:hover {
+    background: rgba(255,255,255,0.2);
+    border-radius: 4px;
+    border: none;
+    box-shadow: none;
+}
+
+headerbar button:active {
+    background: rgba(0,0,0,0.2);
+    border: none;
+    box-shadow: none;
+}
+
+headerbar button:focus {
+    border: none;
+    box-shadow: none;
+}
+
+headerbar button * {
+    background: transparent;
+}
+
+/* Login card */
+.login-card {
+    background: #2d2d2d;
+    border: 1px solid #444;
+    border-radius: 8px;
+    padding: 30px;
+    margin: 20px;
+    color: white;
+}
+
+.login-title {
+    color: #FF5252;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.login-subtitle {
+    color: #cccccc;
+    font-size: 14px;
+}
+
+/* Labels */
+label {
+    color: #ffffff;
+}
+
+
+/* Modern entries */
+.modern-entry {
+    background: #383838;
+    border: 2px solid #555;
+    border-radius: 6px;
+    padding: 12px;
+    font-size: 14px;
+    min-height: 20px;
+    color: white;
+}
+
+.modern-entry:focus {
+    border-color: #FF5252;
+    background: #404040;
+}
+
+/* Primary button */
+.primary-button {
+    background: #FF0000;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: bold;
+    min-height: 20px;
+}
+
+.primary-button:hover {
+    background: #FF5252;
+}
+
+/* Secondary button */
+.secondary-button {
+    background: transparent;
+    color: #FF5252;
+    border: 2px solid #FF5252;
+    border-radius: 6px;
+    padding: 10px 24px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.secondary-button:hover {
+    background: #FF5252;
+    color: white;
+}
+
+/* Vault container */
+.vault-container {
+    background: #1e1e1e;
+    padding: 15px;
+    color: white;
+}
+
+/* Error text */
+.error-text {
+    color: #FF5252;
+    font-weight: bold;
+}
+
+/* Entry cards */
+.entry-card {
+    background: #2d2d2d;
+    border: 1px solid #444;
+    border-radius: 6px;
+    padding: 15px;
+    margin: 5px 0;
+    color: white;
+}
+
+.entry-card:hover {
+    background: #353535;
+}
+
+/* Search bar */
+.search-bar {
+    background: #383838;
+    border: 2px solid #555;
+    border-radius: 20px;
+    padding: 10px 15px;
+    font-size: 14px;
+    color: white;
+}
+
+.search-bar:focus {
+    border-color: #FF5252;
+    background: #404040;
+}
+
+/* FAB */
+.fab {
+    background: #FF0000;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    min-width: 50px;
+    min-height: 50px;
+    font-size: 18px;
+}
+
+.fab:hover {
+    background: #FF5252;
+}
+
+/* Status bar */
+statusbar {
+    background: #2d2d2d;
+    color: #cccccc;
+    border-top: 1px solid #444;
+}
+
+/* TreeView for vault entries */
+treeview {
+    background: #2d2d2d;
+    color: white;
+}
+
+treeview header button {
+    background: transparent;
+    color: white;
+    box-shadow: none;
+    outline: none;
+}
+
+treeview header button:hover {
+    background: transparent;
+    color: white;
+    box-shadow: none;
+}
+
+treeview header button:active {
+    background: rgba(255,255,255,0.05);
+    color: white;
+}
+
+treeview:selected {
+    background: #FF0000;
+    color: white;
+}
+
+/* Menu and popover */
+menu {
+    background: #2d2d2d;
+    color: white;
+    border: 1px solid #444;
+}
+
+menuitem {
+    color: white;
+}
+
+menuitem:hover {
+    background: #FF0000;
+    color: white;
+}
+
+/* Dialog and all dialog elements */
+dialog {
+    background: #2d2d2d;
+    color: white;
+}
+
+dialog box {
+    background: #2d2d2d;
+    color: white;
+}
+
+dialog buttonbox {
+    background: #2d2d2d;
+}
+
+dialog button {
+    background: #383838;
+    color: white;
+    border: 1px solid #555;
+    border-radius: 4px;
+    padding: 8px 16px;
+}
+
+dialog button:hover {
+    background: #FF0000;
+    color: white;
+}
+
+/* Message dialogs and confirmation dialogs */
+messagedialog {
+    background: #2d2d2d;
+    color: white;
+}
+
+messagedialog box {
+    background: #2d2d2d;
+}
+
+messagedialog buttonbox {
+    background: #2d2d2d;
+}
+
+messagedialog button {
+    background: #383838;
+    color: white;
+    border: 1px solid #555;
+    border-radius: 4px;
+    padding: 8px 16px;
+    margin: 4px;
+}
+
+messagedialog button:hover {
+    background: #FF0000;
+    color: white;
+}
+
+messagedialog label {
+    color: white;
+    background: transparent;
+}
+
+/* Ensure all dialog content areas are dark */
+dialog .dialog-content-area {
+    background: #2d2d2d;
+}
+
+dialog .dialog-action-area {
+    background: #2d2d2d;
+}
+
+/* Force all buttons in dialogs to be dark */
+dialog button, messagedialog button {
+    background: #383838;
+    color: white;
+    border: 1px solid #555;
+    box-shadow: none;
+    outline: none;
+}
+
+dialog button:hover, messagedialog button:hover {
+    background: #FF0000;
+    color: white;
+    border: 1px solid #FF0000;
+}
+
+/* Fix all buttons to remove white borders and weird styling */
+button {
+    background: #383838;
+    color: white;
+    border: 1px solid #555;
+    border-radius: 4px;
+    padding: 8px 12px;
+    box-shadow: none;
+    outline: none;
+    text-shadow: none;
+}
+
+button:hover {
+    background: #FF0000;
+    color: white;
+    border: 1px solid #FF0000;
+    box-shadow: none;
+}
+
+/* Fix icon backgrounds in buttons - target all child widgets */
+button * {
+    background: transparent;
+    background-color: transparent;
+}
+
+button:hover * {
+    background: transparent;
+    background-color: transparent;
+}
+
+button:active {
+    background: #CC0000;
+    color: white;
+    border: 1px solid #CC0000;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.3);
+}
+
+button:focus {
+    border: 1px solid #FF5252;
+    box-shadow: 0 0 0 1px #FF5252;
+}
+
+/* Force all entry widgets to be dark */
+entry {
+    background: #383838;
+    color: white;
+    border: 2px solid #555;
+    border-radius: 4px;
+    padding: 8px;
+}
+
+entry:focus {
+    border-color: #FF5252;
+    background: #404040;
+}
+
+entry:selected {
+    background: #FF0000;
+    color: white;
+}
+
+/* Spin buttons (number inputs) */
+spinbutton {
+    background: #383838;
+    color: white;
+    border: 2px solid #555;
+    border-radius: 4px;
+}
+
+spinbutton entry {
+    background: #383838;
+    color: white;
+    border: none;
+}
+
+spinbutton button {
+    background: #383838;
+    color: white;
+    border: 1px solid #555;
+}
+
+spinbutton button:hover {
+    background: #FF0000;
+    color: white;
+}
+
+/* Scrolled windows */
+scrolledwindow {
+    background: #2d2d2d;
+}
+
+scrolledwindow viewport {
+    background: #2d2d2d;
+}
+
+/* Text views */
+textview {
+    background: #2d2d2d;
+    color: white;
+}
+
+textview text {
+    background: #2d2d2d;
+    color: white;
+}
+
+/* Combo boxes */
+combobox {
+    background: #383838;
+    color: white;
+}
+
+combobox button {
+    background: #383838;
+    color: white;
+    border: 1px solid #555;
+}
+
+combobox button:hover {
+    background: #FF0000;
+}
+
+/* Check buttons and radio buttons */
+checkbutton {
+    color: white;
+}
+
+radiobutton {
+    color: white;
+}
+
+checkbutton check {
+    background: #383838;
+    border: 1px solid #555;
+}
+
+radiobutton radio {
+    background: #383838;
+    border: 1px solid #555;
+}
+
+checkbutton check:checked {
+    background: #FF0000;
+    color: white;
+}
+
+radiobutton radio:checked {
+    background: #FF0000;
+    color: white;
+}
+
+/* Frames */
+frame {
+    background: #2d2d2d;
+    border: 1px solid #444;
+}
+
+frame label {
+    color: white;
+}
+
+/* Grid and boxes - but NOT in header bar */
+grid {
+    background: #2d2d2d;
+}
+
+box {
+    background: #2d2d2d;
+}
+
+/* Ensure header bar child containers stay transparent (but not the headerbar itself) */
+headerbar grid {
+    background: transparent;
+}
+
+headerbar box {
+    background: transparent;
+}
+
+headerbar label {
+    background: transparent;
+}
+
+/* Spinner/loading widgets */
+spinner {
+    color: #FF0000;
+}
+
+/* Progress bars */
+progressbar {
+    background: #383838;
+}
+
+progressbar progress {
+    background: #FF0000;
+}
+
+/* Separators */
+separator {
+    background: #444;
+}
+
+/* Popover */
+popover {
+    background: #2d2d2d;
+    color: white;
+    border: 1px solid #444;
+}
+
+popover box {
+    background: #2d2d2d;
+}
+
+popover button {
+    background: #383838;
+    color: white;
+    border: 1px solid #555;
+}
+
+popover button:hover {
+    background: #FF0000;
+}
+
+/* Notebook tabs */
+notebook {
+    background: #2d2d2d;
+}
+
+notebook tab {
+    background: #383838;
+    color: white;
+    border: 1px solid #555;
+}
+
+notebook tab:checked {
+    background: #FF0000;
+    color: white;
+}

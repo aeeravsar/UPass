@@ -1,0 +1,60 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Desktop PyInstaller build outputs
+desktop/dist/
+desktop/build/upass/
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# Android build outputs
+android/*.iml
+android/.gradle
+android/local.properties
+android/.idea/caches
+android/.idea/libraries
+android/.idea/modules.xml
+android/.idea/workspace.xml
+android/.idea/navEditor.xml
+android/.idea/assetWizardSettings.xml
+android/build/
+android/captures/
+android/.externalNativeBuild
+android/.cxx
+android/app/build/
+android/app/release/
+android/*.apk
+android/*.aab
+
+# Secrets and sensitive files (never commit!)
+android/*.keystore
+android/*.jks
+android/upass-release.keystore
+android/keystore.properties
+secrets/
+secret/
+*.key
+.env
+
+# Server database (contains user data)
+server/upass.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs and temp files
+*.log
+*.tmp

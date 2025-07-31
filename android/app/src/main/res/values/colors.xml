@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Swiss Red Theme Colors -->
+    <!-- Light Theme -->
+    <color name="md_theme_light_primary">#FF0000</color>
+    <color name="md_theme_light_onPrimary">#FFFFFF</color>
+    <color name="md_theme_light_primaryContainer">#D32F2F</color>
+    <color name="md_theme_light_onPrimaryContainer">#FFFFFF</color>
+    <color name="md_theme_light_secondary">#B71C1C</color>
+    <color name="md_theme_light_onSecondary">#FFFFFF</color>
+    <color name="md_theme_light_secondaryContainer">#E57373</color>
+    <color name="md_theme_light_onSecondaryContainer">#FFFFFF</color>
+    <color name="md_theme_light_tertiary">#8D1A1A</color>
+    <color name="md_theme_light_onTertiary">#FFFFFF</color>
+    <color name="md_theme_light_tertiaryContainer">#F5F5F5</color>
+    <color name="md_theme_light_onTertiaryContainer">#8D1A1A</color>
+    <color name="md_theme_light_error">#FF0000</color>
+    <color name="md_theme_light_errorContainer">#D32F2F</color>
+    <color name="md_theme_light_onError">#FFFFFF</color>
+    <color name="md_theme_light_onErrorContainer">#FFFFFF</color>
+    <color name="md_theme_light_background">#FFFFFF</color>
+    <color name="md_theme_light_onBackground">#212121</color>
+    <color name="md_theme_light_surface">#FFFFFF</color>
+    <color name="md_theme_light_onSurface">#212121</color>
+    <color name="md_theme_light_surfaceVariant">#F8F8F8</color>
+    <color name="md_theme_light_onSurfaceVariant">#424242</color>
+    <color name="md_theme_light_outline">#BDBDBD</color>
+    <color name="md_theme_light_inverseOnSurface">#FFFFFF</color>
+    <color name="md_theme_light_inverseSurface">#212121</color>
+    <color name="md_theme_light_inversePrimary">#FF0000</color>
+    
+    <!-- Dark Theme with True Black Background -->
+    <color name="md_theme_dark_primary">#FF5252</color>
+    <color name="md_theme_dark_onPrimary">#000000</color>
+    <color name="md_theme_dark_primaryContainer">#B71C1C</color>
+    <color name="md_theme_dark_onPrimaryContainer">#FFCDD2</color>
+    <color name="md_theme_dark_secondary">#9E9E9E</color>
+    <color name="md_theme_dark_onSecondary">#000000</color>
+    <color name="md_theme_dark_secondaryContainer">#424242</color>
+    <color name="md_theme_dark_onSecondaryContainer">#E0E0E0</color>
+    <color name="md_theme_dark_tertiary">#BDBDBD</color>
+    <color name="md_theme_dark_onTertiary">#000000</color>
+    <color name="md_theme_dark_tertiaryContainer">#616161</color>
+    <color name="md_theme_dark_onTertiaryContainer">#F5F5F5</color>
+    <color name="md_theme_dark_error">#FF5252</color>
+    <color name="md_theme_dark_errorContainer">#B71C1C</color>
+    <color name="md_theme_dark_onError">#000000</color>
+    <color name="md_theme_dark_onErrorContainer">#FFCDD2</color>
+    <color name="md_theme_dark_background">#000000</color>
+    <color name="md_theme_dark_onBackground">#FFFFFF</color>
+    <color name="md_theme_dark_surface">#121212</color>
+    <color name="md_theme_dark_onSurface">#FFFFFF</color>
+    <color name="md_theme_dark_surfaceVariant">#212121</color>
+    <color name="md_theme_dark_onSurfaceVariant">#E0E0E0</color>
+    <color name="md_theme_dark_outline">#757575</color>
+    <color name="md_theme_dark_inverseOnSurface">#000000</color>
+    <color name="md_theme_dark_inverseSurface">#FFFFFF</color>
+    <color name="md_theme_dark_inversePrimary">#FF0000</color>
+    
+    <!-- Legacy UPass Red Brand Colors -->
+    <color name="red_200">#FFCDD2</color>
+    <color name="red_500">#F44336</color>
+    <color name="red_700">#D32F2F</color>
+    <color name="red_900">#B71C1C</color>
+    
+    <!-- Legacy colors for compatibility -->
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    
+    <!-- Additional colors for UPass -->
+    <color name="error">#FF0000</color>
+    <color name="warning">#FFFF8C00</color>
+    <color name="success">#4CAF50</color>
+    
+    <!-- Surface colors -->
+    <color name="surface_variant">#FFF5F5F5</color>
+    <color name="outline">#FFBDBDBD</color>
+</resources>
