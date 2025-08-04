@@ -5,6 +5,7 @@ UPass is a modern, secure password manager built with zero-knowledge architectur
 ## ✨ Features
 
 - **🔒 Zero-Knowledge Encryption**: All data is encrypted client-side using industry-standard cryptography
+- **🔐 TOTP 2FA Support**: Generate time-based one-time passwords with QR code scanning
 - **🌐 Cross-Platform**: Available on Desktop (Linux, Windows, macOS) and Android
 - **🏠 Self-Hosted**: Run your own server for complete control over your data
 - **📱 Multi-Device Sync**: Access your passwords across all your devices
@@ -23,6 +24,7 @@ UPass follows a client-server architecture with three main components:
 ### 📱 Android Application
 - Native Android app built with Kotlin
 - Material Design UI
+- QR code scanning for easy TOTP setup
 - Secure encrypted storage
 - [Get it on Google Play](https://play.google.com/store/apps/details?id=ch.upass) or download APK from [releases page](https://github.com/aeeravsar/UPass/releases)
 
