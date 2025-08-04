@@ -5,7 +5,8 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="24dp"
-    android:gravity="center">
+    android:gravity="center"
+    android:fitsSystemWindows="true">
 
     <!-- Logo/Title -->
     <TextView
@@ -39,7 +40,7 @@
             android:layout_height="wrap_content"
             android:hint="Vault Name"
             android:inputType="textNoSuggestions"
-            android:maxLength="32"
+            android:maxLength="64"
             android:digits="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789" />
 
     </com.google.android.material.textfield.TextInputLayout>

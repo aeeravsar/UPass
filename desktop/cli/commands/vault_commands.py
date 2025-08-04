@@ -1,4 +1,6 @@
 import pyperclip
+import time
+from core.totp import TOTPManager
 from utils import (
     get_input, get_password, confirm_action, print_error, 
     print_success, print_info, format_table, format_datetime, format_date
@@ -50,9 +52,28 @@ class VaultCommands:
         elif not password:
             password = get_password("Password: ")
         
+        # Ask about TOTP
+        totp_secret = None
+        add_totp = get_input("Add Two-Factor Authentication (2FA)? (y/N): ", required=False)
+        if add_totp and add_totp.lower() == 'y':
+            totp_secret = get_input("2FA Secret (Base32): ").upper().replace(' ', '')
+            if totp_secret:
+                # Validate TOTP secret
+                if not TOTPManager.is_valid_secret(totp_secret):
+                    print_error("Invalid 2FA secret. Must be a valid Base32 string.")
+                    return False
+                
+                # Show current TOTP code as confirmation
+                try:
+                    code = TOTPManager.generate_totp(totp_secret)
+                    print_info(f"Current 2FA code: {TOTPManager.format_code(code)}")
+                except Exception as e:
+                    print_error(f"Failed to generate 2FA code: {e}")
+                    return False
+        
         # Add to vault
         try:
-            self.session.vault.add_entry(username, password, note)
+            self.session.vault.add_entry(username, password, note, totp_secret)
             if self.session.save_vault():
                 print_success(f"Added entry '{note}'")
                 return True
@@ -82,6 +103,16 @@ class VaultCommands:
         print_info(f"Title: {entry.note}")
         print_info(f"Account: {entry.username}")
         print_info(f"Password: {entry.password}")
+        
+        # Show TOTP if available
+        if hasattr(entry, 'totp_secret') and entry.totp_secret:
+            try:
+                code = TOTPManager.generate_totp(entry.totp_secret)
+                remaining = TOTPManager.get_remaining_seconds()
+                print_info(f"2FA Code: {TOTPManager.format_code(code)} ({remaining}s remaining)")
+            except Exception as e:
+                print_error(f"Failed to generate 2FA code: {e}")
+        
         print_info(f"Created: {format_datetime(entry.created_at)}")
         print_info(f"Updated: {format_datetime(entry.updated_at)}")
         
@@ -194,6 +225,45 @@ class VaultCommands:
         
         return False
     
+    def copy_totp(self, note: str = None):
+        """Copy TOTP code for an entry"""
+        if not self.session.authenticated:
+            print_error("Not authenticated. Please login first.")
+            return False
+        
+        if not note:
+            note = get_input("Title: ")
+            if not note:
+                return False
+        
+        entry = self.session.vault.get_entry(note)
+        if not entry:
+            print_error(f"Entry '{note}' not found")
+            return False
+        
+        # Check if entry has TOTP
+        if not hasattr(entry, 'totp_secret') or not entry.totp_secret:
+            print_error(f"Entry '{note}' does not have 2FA configured")
+            return False
+        
+        try:
+            # Generate and copy TOTP code
+            code = TOTPManager.generate_totp(entry.totp_secret)
+            remaining = TOTPManager.get_remaining_seconds()
+            
+            # Copy to clipboard
+            try:
+                pyperclip.copy(code)
+                print_success(f"2FA code {TOTPManager.format_code(code)} copied to clipboard ({remaining}s remaining)")
+            except:
+                print_info(f"2FA code: {TOTPManager.format_code(code)} ({remaining}s remaining)")
+            
+            return True
+            
+        except Exception as e:
+            print_error(f"Failed to generate 2FA code: {e}")
+            return False
+    
     def quick_add(self, note: str):
         """Quick add with minimal prompts"""
         if not self.session.authenticated:
@@ -274,11 +344,14 @@ class VaultCommands:
             return False
         
         # Format as table
-        headers = ["Title", "Account", "Created"]
+        headers = ["Title", "Account", "2FA", "Created"]
         rows = []
-        for entry in entries:
-            created = format_date(entry["created_at"])
-            rows.append([entry["note"], entry["username"], created])
+        for entry_data in entries:
+            # Get full entry to check for TOTP
+            entry = self.session.vault.get_entry(entry_data["note"])
+            has_totp = "Yes" if (hasattr(entry, 'totp_secret') and entry.totp_secret) else "No"
+            created = format_date(entry_data["created_at"])
+            rows.append([entry_data["note"], entry_data["username"], has_totp, created])
         
         print(format_table(headers, rows))
         print_info(f"Total: {len(entries)} entries")
@@ -327,13 +400,34 @@ class VaultCommands:
         
         new_note = get_input(f"New title ({entry.note}): ", required=False)
         
+        # Ask about TOTP
+        new_totp_secret = None
+        if hasattr(entry, 'totp_secret') and entry.totp_secret:
+            print_info("Entry has 2FA configured")
+            totp_choice = get_input("Update 2FA? (y/N/remove): ", required=False).lower()
+            if totp_choice == 'y':
+                new_totp_secret = get_input("New 2FA Secret (Base32): ").upper().replace(' ', '')
+                if new_totp_secret and not TOTPManager.is_valid_secret(new_totp_secret):
+                    print_error("Invalid 2FA secret. Must be a valid Base32 string.")
+                    return False
+            elif totp_choice == 'remove':
+                new_totp_secret = ""  # Empty string to remove
+        else:
+            add_totp = get_input("Add 2FA to this entry? (y/N): ", required=False)
+            if add_totp and add_totp.lower() == 'y':
+                new_totp_secret = get_input("2FA Secret (Base32): ").upper().replace(' ', '')
+                if new_totp_secret and not TOTPManager.is_valid_secret(new_totp_secret):
+                    print_error("Invalid 2FA secret. Must be a valid Base32 string.")
+                    return False
+        
         # Update entry
         try:
             self.session.vault.update_entry(
                 note,
                 username=new_username if new_username else None,
                 password=new_password,
-                new_note=new_note if new_note else None
+                new_note=new_note if new_note else None,
+                totp_secret=new_totp_secret
             )
             
             if self.session.save_vault():

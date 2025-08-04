@@ -82,6 +82,8 @@ class UPassSession:
             print("Creating new vault...")
             if self.save_vault(force_create=True):
                 print_success("Vault created successfully!")
+                # Save server URL and username for next session
+                self.config.set_last_server(self.config.server_url)
                 self.config.set_last_username(vault_name)  # Config still uses username internally
                 self._save_session()
                 return True
@@ -156,6 +158,9 @@ class UPassSession:
             vault_data = self.crypto.decrypt_vault(vault_blob)
             self.vault.from_list(vault_data)
             print_success(f"Logged into vault successfully! Loaded {len(self.vault.entries)} entries")
+            # Save server URL and username for next session
+            self.config.set_last_server(self.config.server_url)
+            self.config.set_last_username(vault_name)
             
         except Exception as e:
             print_error(f"Failed to login to vault: {e}")

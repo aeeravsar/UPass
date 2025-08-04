@@ -342,5 +342,8 @@ class LoginWindow(Gtk.Box):
     def _on_success(self):
         """Handle successful login/registration"""
         self.spinner.stop()
+        # Save the server URL for next time
+        server_url = self._normalize_server_url(self.server_entry.get_text())
+        self.session.config.set_last_server(server_url)
         self.login_callback(self.session)
         return False

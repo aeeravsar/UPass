@@ -23,9 +23,9 @@ def setup_middleware(app, config):
         )
         
         # Specific limits for vault operations
-        limiter.limit("25/minute")(app.view_functions['vault.get_vault'])
-        limiter.limit("25/minute")(app.view_functions['vault.put_vault'])
-        limiter.limit("25/minute")(app.view_functions['vault.delete_vault'])
+        limiter.limit("100/minute")(app.view_functions['vault.get_vault'])
+        limiter.limit("100/minute")(app.view_functions['vault.put_vault'])
+        limiter.limit("100/minute")(app.view_functions['vault.delete_vault'])
     
     # Security headers
     @app.after_request

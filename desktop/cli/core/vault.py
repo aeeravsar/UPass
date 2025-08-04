@@ -5,25 +5,34 @@ import json
 class VaultEntry:
     """Represents a single password entry in the vault"""
     
-    def __init__(self, username: str, password: str, note: str = ""):
+    def __init__(self, username: str, password: str, note: str = "", totp_secret: str = None):
         self.username = username
         self.password = password
         self.note = note
+        self.totp_secret = totp_secret
         self.created_at = datetime.utcnow().isoformat() + "Z"
         self.updated_at = self.created_at
     
     def to_dict(self) -> Dict[str, str]:
-        return {
+        data = {
             "username": self.username,
             "password": self.password,
             "note": self.note,
             "created_at": self.created_at,
             "updated_at": self.updated_at
         }
+        if self.totp_secret:
+            data["totp_secret"] = self.totp_secret
+        return data
     
     @classmethod
     def from_dict(cls, data: Dict[str, str]) -> 'VaultEntry':
-        entry = cls(data["username"], data["password"], data.get("note", ""))
+        entry = cls(
+            data["username"], 
+            data["password"], 
+            data.get("note", ""),
+            data.get("totp_secret")
+        )
         entry.created_at = data.get("created_at", entry.created_at)
         entry.updated_at = data.get("updated_at", entry.updated_at)
         return entry
@@ -31,26 +40,36 @@ class VaultEntry:
 class Vault:
     """Manages the password vault"""
     
-    MAX_ENTRIES = 256
+    MAX_ENTRIES = 1024
+    MAX_NOTE_LENGTH = 128
+    MAX_USERNAME_LENGTH = 64
     MAX_PASSWORD_LENGTH = 128
+    MAX_TOTP_SECRET_LENGTH = 64
     
     def __init__(self):
         self.entries: List[VaultEntry] = []
     
-    def add_entry(self, username: str, password: str, note: str = "") -> bool:
+    def add_entry(self, username: str, password: str, note: str = "", totp_secret: str = None) -> bool:
         """Add a new entry to the vault"""
         if len(self.entries) >= self.MAX_ENTRIES:
             raise ValueError(f"Vault is full (max {self.MAX_ENTRIES} entries)")
         
+        # Validate field lengths
+        if len(note) > self.MAX_NOTE_LENGTH:
+            raise ValueError(f"Note too long (max {self.MAX_NOTE_LENGTH} characters)")
+        if len(username) > self.MAX_USERNAME_LENGTH:
+            raise ValueError(f"Username too long (max {self.MAX_USERNAME_LENGTH} characters)")
         if len(password) > self.MAX_PASSWORD_LENGTH:
             raise ValueError(f"Password too long (max {self.MAX_PASSWORD_LENGTH} characters)")
+        if totp_secret and len(totp_secret) > self.MAX_TOTP_SECRET_LENGTH:
+            raise ValueError(f"TOTP secret too long (max {self.MAX_TOTP_SECRET_LENGTH} characters)")
         
         # Check for duplicates
         for entry in self.entries:
             if entry.note.lower() == note.lower():
                 raise ValueError(f"Entry with note '{note}' already exists")
         
-        entry = VaultEntry(username, password, note)
+        entry = VaultEntry(username, password, note, totp_secret)
         self.entries.append(entry)
         return True
     
@@ -62,7 +81,8 @@ class Vault:
         return None
     
     def update_entry(self, note: str, username: Optional[str] = None, 
-                    password: Optional[str] = None, new_note: Optional[str] = None) -> bool:
+                    password: Optional[str] = None, new_note: Optional[str] = None,
+                    totp_secret: Optional[str] = None) -> bool:
         """Update an existing entry"""
         entry = self.get_entry(note)
         if not entry:
@@ -80,6 +100,10 @@ class Vault:
                 if e != entry and e.note.lower() == new_note.lower():
                     raise ValueError(f"Entry with note '{new_note}' already exists")
             entry.note = new_note
+        if totp_secret is not None:
+            if totp_secret and len(totp_secret) > self.MAX_TOTP_SECRET_LENGTH:
+                raise ValueError(f"TOTP secret too long (max {self.MAX_TOTP_SECRET_LENGTH} characters)")
+            entry.totp_secret = totp_secret
         
         entry.updated_at = datetime.utcnow().isoformat() + "Z"
         return True

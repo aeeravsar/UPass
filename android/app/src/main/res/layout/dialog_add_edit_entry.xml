@@ -1,10 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="24dp">
+    android:maxHeight="600dp"
+    android:fillViewport="false"
+    android:scrollbars="vertical"
+    android:fadeScrollbars="true"
+    android:scrollbarStyle="insideOverlay">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
 
     <!-- Title -->
     <TextView
@@ -29,7 +38,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Title (e.g., Gmail, GitHub)"
-            android:inputType="text" />
+            android:inputType="text"
+            android:maxLength="128" />
 
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -46,7 +56,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Username"
-            android:inputType="textNoSuggestions" />
+            android:inputType="textNoSuggestions"
+            android:maxLength="64" />
 
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -146,6 +157,52 @@
 
     </LinearLayout>
 
+    <!-- TOTP Section -->
+    <com.google.android.material.checkbox.MaterialCheckBox
+        android:id="@+id/cbAddTotp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Add Two-Factor Authentication (2FA)"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp" />
+
+    <LinearLayout
+        android:id="@+id/llTotpSection"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:layout_marginBottom="16dp">
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            app:boxStrokeColor="?attr/colorPrimary"
+            app:hintTextColor="?attr/colorPrimary">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etTotpSecret"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="2FA Secret"
+                android:inputType="textCapCharacters|textNoSuggestions"
+                android:maxLength="64" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnScanQR"
+            style="@style/Widget.UPass.Button.Outlined"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Scan QR Code"
+            android:textSize="14sp"
+            android:layout_marginBottom="8dp" />
+
+
+    </LinearLayout>
+
     <!-- Buttons -->
     <LinearLayout
         android:layout_width="match_parent"
@@ -175,4 +232,6 @@
 
     </LinearLayout>
 
-</LinearLayout>
+    </LinearLayout>
+
+</ScrollView>

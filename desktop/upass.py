@@ -107,6 +107,22 @@ def launch_gui(server_url=None):
             print("pip install pynacl requests pygobject")
             return 1
         
+        # Load last used server if no server specified
+        if not server_url:
+            try:
+                # Import config to get last server
+                import importlib.util
+                config_path = os.path.join(cli_path, 'utils', 'config.py')
+                spec = importlib.util.spec_from_file_location("config", config_path)
+                config_module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(config_module)
+                
+                config = config_module.get_config()
+                server_url = config.get_last_server()
+            except Exception:
+                # Fallback to default if loading config fails
+                pass
+        
         # Import GUI using importlib to avoid path conflicts
         import importlib.util
         gui_main_path = os.path.join(gui_path, 'main.py')

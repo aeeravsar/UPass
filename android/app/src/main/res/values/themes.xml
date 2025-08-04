@@ -38,36 +38,48 @@
     <style name="Theme.UPass.NoActionBar" parent="Theme.UPass">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
+        <!-- Handle system window insets properly -->
+        <item name="android:windowTranslucentStatus">false</item>
+        <item name="android:windowTranslucentNavigation">false</item>
+        <item name="android:fitsSystemWindows">false</item>
     </style>
     
     <!-- Custom text appearances -->
-    <style name="TextAppearance.UPass.Button" parent="TextAppearance.Material3.LabelLarge">
+    <style name="TextAppearance.UPass.Button" parent="TextAppearance.AppCompat.Button">
         <item name="android:textSize">16sp</item>
         <item name="android:textStyle">bold</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:fontFamily">sans-serif</item>
     </style>
     
     <!-- Custom button styles -->
     <style name="Widget.UPass.Button" parent="Widget.Material3.Button">
         <item name="android:textSize">16sp</item>
         <item name="android:textStyle">bold</item>
+        <item name="android:textAllCaps">false</item>
         <item name="android:minHeight">48dp</item>
         <item name="android:paddingStart">24dp</item>
         <item name="android:paddingEnd">24dp</item>
+        <item name="android:fontFamily">sans-serif</item>
     </style>
     
     <style name="Widget.UPass.Button.Outlined" parent="Widget.Material3.Button.OutlinedButton">
         <item name="android:textSize">16sp</item>
         <item name="android:textStyle">bold</item>
+        <item name="android:textAllCaps">false</item>
         <item name="android:minHeight">48dp</item>
         <item name="android:paddingStart">24dp</item>
         <item name="android:paddingEnd">24dp</item>
+        <item name="android:fontFamily">sans-serif</item>
     </style>
     
     <style name="Widget.UPass.Button.Text" parent="Widget.Material3.Button.TextButton">
         <item name="android:textSize">16sp</item>
         <item name="android:textStyle">normal</item>
+        <item name="android:textAllCaps">false</item>
         <item name="android:minHeight">48dp</item>
         <item name="android:paddingStart">24dp</item>
         <item name="android:paddingEnd">24dp</item>
+        <item name="android:fontFamily">sans-serif</item>
     </style>
 </resources>

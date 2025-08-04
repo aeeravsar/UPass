@@ -9,6 +9,7 @@ class Config:
     
     def __init__(self, server_url: Optional[str] = None):
         self.base_dir = Path.home() / '.upass'
+        self.global_config_file = self.base_dir / 'global_config.json'
         self.server_url = server_url or self._get_server_url()
         self.server_dir = self._get_server_dir()
         self.config_file = self.server_dir / 'config.json'
@@ -18,8 +19,17 @@ class Config:
         self.server_dir.mkdir(exist_ok=True)
     
     def _get_server_url(self) -> str:
-        """Get server URL from environment, args, or default"""
-        return os.environ.get('UPASS_SERVER_URL', 'https://server.upass.ch')
+        """Get server URL from environment, last used, or default"""
+        # Priority: 1. Environment variable, 2. Last used server, 3. Default
+        env_server = os.environ.get('UPASS_SERVER_URL')
+        if env_server:
+            return env_server
+        
+        last_server = self.get_last_server()
+        if last_server:
+            return last_server
+        
+        return 'https://server.upass.ch'
     
     def _get_server_dir(self) -> Path:
         """Get server-specific directory based on URL"""
@@ -87,6 +97,35 @@ class Config:
                     except:
                         continue
         return servers
+    
+    def get_global_config(self) -> dict:
+        """Get global configuration (server-independent)"""
+        if self.global_config_file.exists():
+            try:
+                with open(self.global_config_file, 'r') as f:
+                    return json.load(f)
+            except:
+                return {}
+        return {}
+    
+    def set_global_config(self, config: dict) -> None:
+        """Save global configuration (server-independent)"""
+        try:
+            with open(self.global_config_file, 'w') as f:
+                json.dump(config, f, indent=2)
+        except:
+            pass  # Fail silently if can't write config
+    
+    def get_last_server(self) -> Optional[str]:
+        """Get the last used server URL"""
+        global_config = self.get_global_config()
+        return global_config.get('last_server_url')
+    
+    def set_last_server(self, server_url: str) -> None:
+        """Save the last used server URL"""
+        global_config = self.get_global_config()
+        global_config['last_server_url'] = server_url
+        self.set_global_config(global_config)
 
 def get_config(server_url: Optional[str] = None) -> Config:
     """Get configuration instance for specified server"""

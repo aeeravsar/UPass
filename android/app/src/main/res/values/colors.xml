@@ -80,4 +80,7 @@
     <!-- Surface colors -->
     <color name="surface_variant">#FFF5F5F5</color>
     <color name="outline">#FFBDBDBD</color>
+    
+    <!-- QR Scanner colors -->
+    <color name="black_overlay">#CC000000</color>
 </resources>

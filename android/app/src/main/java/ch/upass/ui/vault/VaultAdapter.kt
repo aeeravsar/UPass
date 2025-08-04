@@ -42,6 +42,13 @@ class VaultAdapter(
             binding.tvUsername.text = entry.username
             binding.tvLastModified.text = formatTimestamp(entry.updatedAt)
             
+            // Show TOTP indicator if entry has TOTP
+            if (!entry.totpSecret.isNullOrEmpty()) {
+                binding.tvTotpIndicator.visibility = android.view.View.VISIBLE
+            } else {
+                binding.tvTotpIndicator.visibility = android.view.View.GONE
+            }
+            
             binding.root.setOnClickListener {
                 onItemClick(entry)
             }

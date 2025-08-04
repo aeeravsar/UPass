@@ -21,6 +21,7 @@ Examples:
   upass gen-add github johndoe   # Generate password and add entry
   upass get github               # Get password for 'github' entry
   upass copy github              # Copy password to clipboard only
+  upass totp github              # Copy 2FA code to clipboard
   upass list                     # List all entries
   upass search bank              # Search for entries containing 'bank'
   upass update github            # Update an existing entry
@@ -93,6 +94,10 @@ Custom Server Examples:
     # Copy password only
     copy_parser = subparsers.add_parser('copy', help='Copy password to clipboard')
     copy_parser.add_argument('note', help='Entry note/description')
+    
+    # Copy TOTP command
+    totp_parser = subparsers.add_parser('totp', help='Copy 2FA code to clipboard')
+    totp_parser.add_argument('note', help='Entry note/description')
     
     # Regenerate password for existing entry
     regen_parser = subparsers.add_parser('regen', help='Regenerate password for entry')
@@ -231,6 +236,16 @@ def main():
                     return 1
             
             if vault_commands.copy_password(args.note):
+                return 0
+            return 1
+        
+        elif args.command == 'totp':
+            if not session.authenticated:
+                print_info("Please login first")
+                if not session.login():
+                    return 1
+            
+            if vault_commands.copy_totp(args.note):
                 return 0
             return 1
         

@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.CAMERA" />
     
     <application
         android:allowBackup="true"
@@ -34,6 +35,12 @@
             android:name=".ui.register.RegisterActivity"
             android:exported="false"
             android:theme="@style/Theme.UPass.NoActionBar" />
+        
+        <activity
+            android:name=".ui.qr.QRScannerActivity"
+            android:exported="false"
+            android:theme="@style/Theme.UPass.NoActionBar"
+            android:screenOrientation="portrait" />
             
     </application>
 

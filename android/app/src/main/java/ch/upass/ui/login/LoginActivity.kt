@@ -5,9 +5,11 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
+import android.view.WindowInsetsController
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.view.WindowCompat
 import ch.upass.R
 import ch.upass.crypto.CryptoManager
 import ch.upass.databinding.ActivityLoginBinding
@@ -29,10 +31,31 @@ class LoginActivity : AppCompatActivity() {
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
         
+        setupSystemUI()
         initializeViewModel()
         setupUI()
         observeViewModel()
         checkExistingSession()
+    }
+    
+    private fun setupSystemUI() {
+        // Enable edge-to-edge display
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        
+        // Set status bar color and appearance
+        window.statusBarColor = ContextCompat.getColor(this, R.color.md_theme_light_primary)
+        
+        // Ensure status bar icons are visible
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            window.insetsController?.setSystemBarsAppearance(
+                0, // Clear light status bar flag (use dark icons on light background)
+                WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS
+            )
+        } else {
+            @Suppress("DEPRECATION")
+            window.decorView.systemUiVisibility = window.decorView.systemUiVisibility and 
+                View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
+        }
     }
     
     private fun initializeViewModel() {

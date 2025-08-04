@@ -38,5 +38,9 @@
     <style name="Theme.UPass.NoActionBar" parent="Theme.UPass">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
+        <!-- Handle system window insets properly -->
+        <item name="android:windowTranslucentStatus">false</item>
+        <item name="android:windowTranslucentNavigation">false</item>
+        <item name="android:fitsSystemWindows">false</item>
     </style>
 </resources>

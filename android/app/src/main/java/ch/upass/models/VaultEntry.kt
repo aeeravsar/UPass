@@ -21,22 +21,31 @@ data class VaultEntry(
     val createdAt: String = Instant.now().toString(),
     
     @SerializedName("updated_at")
-    val updatedAt: String = Instant.now().toString()
+    val updatedAt: String = Instant.now().toString(),
+    
+    // TOTP fields (optional)
+    @SerializedName("totp_secret")
+    val totpSecret: String? = null
 ) : Serializable {
     companion object {
-        const val MAX_USERNAME_LENGTH = 32
+        const val MAX_NOTE_LENGTH = 128
+        const val MAX_USERNAME_LENGTH = 64
         const val MAX_PASSWORD_LENGTH = 128
-        const val MAX_VAULT_ENTRIES = 256
-        const val MAX_VAULT_SIZE_KB = 100
+        const val MAX_TOTP_SECRET_LENGTH = 64
+        const val MAX_VAULT_ENTRIES = 1024
+        const val MAX_VAULT_SIZE_KB = 1024
         
         /**
          * Validates a vault entry according to protocol constraints.
          * Uses relaxed validation to match CLI behavior.
          */
         fun validate(entry: VaultEntry): Boolean {
-            return entry.password.isNotBlank() &&
+            return entry.note.isNotBlank() &&
+                   entry.note.length <= MAX_NOTE_LENGTH &&
+                   entry.username.length <= MAX_USERNAME_LENGTH &&
+                   entry.password.isNotBlank() &&
                    entry.password.length <= MAX_PASSWORD_LENGTH &&
-                   entry.note.isNotBlank()
+                   (entry.totpSecret == null || entry.totpSecret.length <= MAX_TOTP_SECRET_LENGTH)
         }
     }
     

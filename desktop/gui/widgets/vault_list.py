@@ -22,8 +22,8 @@ class VaultListWidget(Gtk.TreeView):
     
     def _setup_ui(self):
         """Setup tree view"""
-        # Create list store: note, username, created, updated, entry_object
-        self.store = Gtk.ListStore(str, str, str, str, object)
+        # Create list store: note, username, 2FA, created, updated, entry_object
+        self.store = Gtk.ListStore(str, str, str, str, str, object)
         self.filtered_store = self.store.filter_new()
         self.filtered_store.set_visible_func(self._filter_func)
         
@@ -44,16 +44,23 @@ class VaultListWidget(Gtk.TreeView):
         account_column.set_sort_column_id(1)
         self.append_column(account_column)
         
+        # 2FA column
+        totp_renderer = Gtk.CellRendererText()
+        totp_column = Gtk.TreeViewColumn("2FA", totp_renderer, text=2)
+        totp_column.set_sort_column_id(2)
+        totp_column.set_min_width(50)
+        self.append_column(totp_column)
+        
         # Created column
         created_renderer = Gtk.CellRendererText()
-        created_column = Gtk.TreeViewColumn("Created", created_renderer, text=2)
-        created_column.set_sort_column_id(2)
+        created_column = Gtk.TreeViewColumn("Created", created_renderer, text=3)
+        created_column.set_sort_column_id(3)
         self.append_column(created_column)
         
         # Updated column
         updated_renderer = Gtk.CellRendererText()
-        updated_column = Gtk.TreeViewColumn("Updated", updated_renderer, text=3)
-        updated_column.set_sort_column_id(3)
+        updated_column = Gtk.TreeViewColumn("Updated", updated_renderer, text=4)
+        updated_column.set_sort_column_id(4)
         self.append_column(updated_column)
         
         # Enable search
@@ -83,6 +90,11 @@ class VaultListWidget(Gtk.TreeView):
         copy_user_item = Gtk.MenuItem("Copy Account")
         copy_user_item.connect("activate", self._on_copy_username)
         self.context_menu.append(copy_user_item)
+        
+        # Copy TOTP (will be shown/hidden based on entry)
+        self.copy_totp_item = Gtk.MenuItem("Copy 2FA Code")
+        self.copy_totp_item.connect("activate", self._on_copy_totp)
+        self.context_menu.append(self.copy_totp_item)
         
         # Separator
         self.context_menu.append(Gtk.SeparatorMenuItem())
@@ -146,9 +158,13 @@ class VaultListWidget(Gtk.TreeView):
                 except:
                     updated = entry.updated_at
             
+            # Check if entry has TOTP
+            has_totp = "Yes" if (hasattr(entry, 'totp_secret') and getattr(entry, 'totp_secret')) else "No"
+            
             self.store.append([
                 getattr(entry, 'note', ''),
                 getattr(entry, 'username', ''),
+                has_totp,
                 created,
                 updated,
                 entry
@@ -160,14 +176,14 @@ class VaultListWidget(Gtk.TreeView):
         model, iter = selection.get_selected()
         if iter:
             # Get from sorted/filtered model
-            return model[iter][4]
+            return model[iter][5]  # Updated index for entry object
         return None
     
     def _on_row_activated(self, tree_view, path, column):
         """Handle row double-click"""
         model = self.get_model()
         iter = model.get_iter(path)
-        entry = model[iter][4]
+        entry = model[iter][5]  # Updated index for entry object
         self.emit('entry-selected', entry)
     
     def _on_button_press(self, widget, event):
@@ -178,6 +194,13 @@ class VaultListWidget(Gtk.TreeView):
             if result:
                 path, column, x, y = result
                 self.get_selection().select_path(path)
+                
+                # Update context menu based on selected entry
+                entry = self._get_selected_entry()
+                if entry and hasattr(entry, 'totp_secret') and entry.totp_secret:
+                    self.copy_totp_item.show()
+                else:
+                    self.copy_totp_item.hide()
                 
                 # Show context menu
                 self.context_menu.popup_at_pointer(event)
@@ -202,6 +225,25 @@ class VaultListWidget(Gtk.TreeView):
             if username:
                 clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
                 clipboard.set_text(username, -1)
+    
+    def _on_copy_totp(self, menu_item):
+        """Copy TOTP code to clipboard"""
+        entry = self._get_selected_entry()
+        if entry and hasattr(entry, 'totp_secret') and entry.totp_secret:
+            try:
+                # Import TOTP manager
+                import sys, os
+                cli_path = os.path.join(os.path.dirname(__file__), '..', '..', '..', 'cli')
+                if cli_path not in sys.path:
+                    sys.path.insert(0, cli_path)
+                from core.totp import TOTPManager
+                
+                code = TOTPManager.generate_totp(entry.totp_secret)
+                clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
+                clipboard.set_text(code, -1)
+                print(f"2FA code copied for {getattr(entry, 'note', '')}")
+            except Exception as e:
+                print(f"Failed to generate TOTP code: {e}")
     
     def _on_edit_entry(self, menu_item):
         """Edit selected entry"""

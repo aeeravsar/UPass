@@ -1,16 +1,21 @@
 package ch.upass.ui.vault
 
 import android.app.Dialog
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.DialogFragment
 import ch.upass.crypto.CryptoManager
+import ch.upass.crypto.TOTPManager
 import ch.upass.databinding.DialogAddEditEntryBinding
 import ch.upass.models.VaultEntry
+import ch.upass.ui.qr.QRScannerActivity
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.snackbar.Snackbar
 
 /**
  * Dialog for adding or editing vault entries.
@@ -23,6 +28,30 @@ class AddEditEntryDialog : DialogFragment() {
     private var existingEntry: VaultEntry? = null
     private var onSaveClickListener: ((VaultEntry) -> Unit)? = null
     private val cryptoManager = CryptoManager()
+    
+    private val qrScannerLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == android.app.Activity.RESULT_OK) {
+            val data = result.data
+            val totpSecret = data?.getStringExtra(QRScannerActivity.EXTRA_TOTP_SECRET)
+            val accountName = data?.getStringExtra(QRScannerActivity.EXTRA_ACCOUNT_NAME)
+            
+            if (!totpSecret.isNullOrEmpty()) {
+                // Auto-fill the TOTP secret
+                binding.cbAddTotp.isChecked = true
+                binding.llTotpSection.visibility = View.VISIBLE
+                binding.etTotpSecret.setText(totpSecret)
+                
+                // Optionally set the account name if the entry is new and fields are empty
+                if (existingEntry == null && binding.etNote.text.isNullOrEmpty() && !accountName.isNullOrEmpty()) {
+                    binding.etNote.setText(accountName)
+                }
+                
+                Snackbar.make(binding.root, "2FA secret scanned successfully!", Snackbar.LENGTH_SHORT).show()
+            }
+        }
+    }
     
     companion object {
         private const val ARG_ENTRY = "entry"
@@ -66,6 +95,20 @@ class AddEditEntryDialog : DialogFragment() {
             togglePasswordOptions()
         }
         
+        // Setup TOTP
+        binding.cbAddTotp.setOnCheckedChangeListener { _, isChecked ->
+            binding.llTotpSection.visibility = if (isChecked) View.VISIBLE else View.GONE
+            if (!isChecked) {
+                // Clear TOTP fields when unchecked
+                binding.etTotpSecret.setText("")
+            }
+        }
+        
+        binding.btnScanQR.setOnClickListener {
+            val intent = Intent(requireContext(), QRScannerActivity::class.java)
+            qrScannerLauncher.launch(intent)
+        }
+        
         binding.sliderLength.addOnChangeListener { _, value, _ ->
             binding.tvLength.text = value.toInt().toString()
         }
@@ -98,6 +141,13 @@ class AddEditEntryDialog : DialogFragment() {
             binding.etNote.setText(entry.note)
             binding.etUsername.setText(entry.username)
             binding.etPassword.setText(entry.password)
+            
+            // Setup TOTP if exists
+            if (!entry.totpSecret.isNullOrEmpty()) {
+                binding.cbAddTotp.isChecked = true
+                binding.llTotpSection.visibility = View.VISIBLE
+                binding.etTotpSecret.setText(entry.totpSecret)
+            }
         }
     }
     
@@ -123,41 +173,71 @@ class AddEditEntryDialog : DialogFragment() {
         val username = binding.etUsername.text.toString().trim()
         val password = binding.etPassword.text.toString()
         
-        if (!validateInput(note, username, password)) {
+        // Get TOTP fields if enabled
+        val totpSecret = if (binding.cbAddTotp.isChecked) {
+            binding.etTotpSecret.text.toString().trim().uppercase().replace(" ", "")
+        } else null
+        
+        if (!validateInput(note, username, password, totpSecret)) {
             return
         }
         
-        val entry = VaultEntry(
-            username = username,
-            password = password,
-            note = note
-        )
+        val entry = if (existingEntry != null) {
+            VaultEntry(
+                username = username,
+                password = password,
+                note = note,
+                createdAt = existingEntry!!.createdAt,
+                updatedAt = java.time.Instant.now().toString(),
+                totpSecret = totpSecret
+            )
+        } else {
+            VaultEntry(
+                username = username,
+                password = password,
+                note = note,
+                totpSecret = totpSecret
+            )
+        }
         
         onSaveClickListener?.invoke(entry)
         dismiss()
     }
     
-    private fun validateInput(note: String, username: String, password: String): Boolean {
+    private fun validateInput(note: String, username: String, password: String, totpSecret: String?): Boolean {
         return when {
             note.isBlank() -> {
                 binding.etNote.error = "Note cannot be empty"
                 false
             }
-            username.isBlank() -> {
-                binding.etUsername.error = "Username cannot be empty"
+            note.length > VaultEntry.MAX_NOTE_LENGTH -> {
+                binding.etNote.error = "Note must be ${VaultEntry.MAX_NOTE_LENGTH} characters or less"
                 false
             }
-            username.length > 32 -> {
-                binding.etUsername.error = "Username must be 32 characters or less"
+            username.length > VaultEntry.MAX_USERNAME_LENGTH -> {
+                binding.etUsername.error = "Username must be ${VaultEntry.MAX_USERNAME_LENGTH} characters or less"
                 false
             }
             password.isBlank() -> {
                 binding.etPassword.error = "Password cannot be empty"
                 false
             }
-            password.length > 128 -> {
-                binding.etPassword.error = "Password must be 128 characters or less"
+            password.length > VaultEntry.MAX_PASSWORD_LENGTH -> {
+                binding.etPassword.error = "Password must be ${VaultEntry.MAX_PASSWORD_LENGTH} characters or less"
                 false
+            }
+            totpSecret != null && totpSecret.isNotEmpty() -> {
+                when {
+                    !TOTPManager.isValidSecret(totpSecret) -> {
+                        binding.etTotpSecret.error = "Invalid 2FA secret. Must be a valid Base32 string."
+                        false
+                    }
+                    totpSecret.length > VaultEntry.MAX_TOTP_SECRET_LENGTH -> {
+                        binding.etTotpSecret.error = "2FA secret must be ${VaultEntry.MAX_TOTP_SECRET_LENGTH} characters or less"
+                        false
+                    }
+                    else -> true
+                }
             }
             else -> true
         }
