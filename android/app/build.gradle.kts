@@ -7,7 +7,7 @@ plugins {
 }
 
 // Read version from root VERSION file
-val rootVersionFile = rootProject.file("../../VERSION")
+val rootVersionFile = rootProject.file("../VERSION")
 val projectVersion = if (rootVersionFile.exists()) {
     rootVersionFile.readText().trim()
 } else {
